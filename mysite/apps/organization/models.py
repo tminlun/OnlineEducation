@@ -13,6 +13,7 @@ class CityDict(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
+        """在后台添加了一个对象，显示出添加 name；如果不重构添加了对象时候只会显示obj对象"""
         return self.name
 
 
@@ -20,17 +21,28 @@ class CityDict(models.Model):
 class CourseOrg(models.Model):
     name = models.CharField(max_length=50, verbose_name="机构名称")
     desc = models.TextField(verbose_name="机构的描述")
+    #因为没有设置可以为空，是我们要设置默认值
+    category = models.CharField(default="pxjg",max_length=20, choices=(("pxjg","培训机构"),("gr","个人"),("gx","高校")), verbose_name="机构类别")
     click_nums = models.IntegerField(default=0, verbose_name="点击数")
     fav_nums = models.IntegerField(default=0, verbose_name="收藏数")
-    image = models.ImageField(upload_to='org/%Y%m',default='org/default.png', verbose_name="机构的封面图")
+    image = models.ImageField(upload_to='org/%Y%m',default='org/default.png', verbose_name="机构logo")
     address = models.CharField(max_length=150, verbose_name="机构地址")
     city = models.ForeignKey(CityDict, verbose_name='所在城市', on_delete=models.CASCADE,null=True,blank=True)
-    add_time = models.DateTimeField(default=datetime.now,verbose_name="时间")
+    add_time = models.DateTimeField(default=datetime.now, verbose_name="时间")
 
     class Meta:
         verbose_name = "课程机构的基本信息"
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        """添加对象显示出name"""
+        return self.name
+
+    def descs(self):
+        if len(str(self.desc)) > 65:
+            return "{}...".format(str(self.desc))[0:65]
+        else:
+            return self.desc
 
 #机构中的老师
 class Teacher(models.Model):

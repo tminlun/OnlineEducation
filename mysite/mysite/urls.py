@@ -1,3 +1,4 @@
+# _*_ encoding:utf-8 _*_  使用注释必须加这个
 """mysite URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -17,7 +18,12 @@ import xadmin
 from django.contrib import admin
 from django.urls import path,include,re_path
 from django.views.generic import TemplateView
-from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
+from django.conf import settings #上传图片
+from django.conf.urls.static import static #上传图片
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView, LogoutView
+from organization.views import OrgView
+
+
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     path('', TemplateView.as_view(template_name='index.html'), name='index'),#测试，省去views渲染
@@ -30,4 +36,7 @@ urlpatterns = [
     #找回密码链接,如果action="{% url 'reset_pwd' %}"会出错，因为这里url要有值传递给参数（active_code）
     re_path('reset/(?P<active_code>.*)/', ResetView.as_view(), name="reset_pwd"),
     path('modify_pwd/',ModifyPwdView.as_view(), name="modify_pwd"), #重设密码
+    path('logout/',LogoutView.as_view(), name="logout"),#注销
+    path('org_list/',OrgView.as_view(), name="org_list"),#课程机构列表（首页）
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media', #上传media图片使得模板显示图片
             ],
         },
     },
@@ -136,8 +137,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-MEDIA_URL = '/media/'# 1 url这个路径指向到 MEDIA_ROOT（/：根目录）
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')# 2 保存到根目录
+MEDIA_URL = '/media/'# 上传图片的路径，上传的图片会自动传递给media目录
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#上传到哪个文件
 
 #重写authentication#记得加逗号，不然会出现奇怪的bug
 AUTHENTICATION_BACKENDS = (

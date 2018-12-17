@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.views import View
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate,login,logout
 from django.db.models import Q
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.hashers import make_password
@@ -183,3 +183,9 @@ class ModifyPwdView(View):
         else:
             email = request.POST.get('email', '')
             return render(request, "password_reset.html",{"modify_form":modify_form, "email": email})
+
+class LogoutView(View):
+    """注销"""
+    def get(self,request):
+        logout(request)
+        return redirect('index')
