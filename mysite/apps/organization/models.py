@@ -22,12 +22,15 @@ class CourseOrg(models.Model):
     name = models.CharField(max_length=50, verbose_name="机构名称")
     desc = models.TextField(verbose_name="机构的描述")
     #因为没有设置可以为空，是我们要设置默认值
-    category = models.CharField(default="pxjg",max_length=20, choices=(("pxjg","培训机构"),("gr","个人"),("gx","高校")), verbose_name="机构类别")
+    category = models.CharField(verbose_name="机构类别",default="pxjg",max_length=20, choices=(("pxjg","培训机构"),("gr","个人"),("gx","高校")))
     click_nums = models.IntegerField(default=0, verbose_name="点击数")
     fav_nums = models.IntegerField(default=0, verbose_name="收藏数")
-    image = models.ImageField(upload_to='org/%Y%m',default='org/default.png', verbose_name="机构logo")
+    image = models.ImageField(upload_to='org/%Y%m',default='org/default.png', verbose_name="机构logo",null=True,blank=True)
     address = models.CharField(max_length=150, verbose_name="机构地址")
+    #在数据库此字段为：city_id，才能够筛选外键
     city = models.ForeignKey(CityDict, verbose_name='所在城市', on_delete=models.CASCADE,null=True,blank=True)
+    students = models.IntegerField(verbose_name="学习人数", default=0)
+    course_nums = models.IntegerField(verbose_name="课程数", default=0)
     add_time = models.DateTimeField(default=datetime.now, verbose_name="时间")
 
     class Meta:

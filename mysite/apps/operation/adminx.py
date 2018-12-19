@@ -4,9 +4,9 @@ from .models import UserAsk,UserMessage,CourseComments,UserCourse,UserFavorite
 class UserAskAdmin(object):
     '''用户表单我要学习'''
 
-    list_display = ['name', 'mobile', 'course_name', 'add_time']
-    search_fields = ['name', 'mobile', 'course_name']
-    list_filter = ['name', 'mobile', 'course_name', 'add_time']
+    list_display = ['name', 'phone_nums', 'course_name', 'add_time']
+    search_fields = ['name', 'phone_nums', 'course_name']
+    list_filter = ['name', 'phone_nums', 'course_name', 'add_time']
 
 
 class UserMessageAdmin(object):

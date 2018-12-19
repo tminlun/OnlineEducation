@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'operation.apps.OperationConfig',#用户操作
     'organization.apps.OrganizationConfig',#课程机构
     'captcha',#注册码
+    'pure_pagination', #分页
 ]
 
 #扩展User
@@ -87,11 +88,16 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
+#数据库
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': "testdjango",
+        'USER': "root",
+        'PASSWORD': "root",
+        'HOST': "127.0.0.1",
     }
 }
 
@@ -153,3 +159,10 @@ EMAIL_HOST_PASSWORD = "irfdbbeesjgeiaac"    # 密码
 EMAIL_USE_TLS = True
 EMAIL_FROM = "1272443075@qq.com"            # 邮箱地址要和EMAIL_HOST_USER保持一致
 
+#分页
+PAGINATION_SETTINGS = {
+    'PAGE_RANGE_DISPLAYED': 10, #分页中间的页码
+    'MARGIN_PAGES_DISPLAYED': 2, #中间左右两边的页码范围两个
+
+    'SHOW_FIRST_PAGE_WHEN_INVALID': True, #使用...
+}
