@@ -73,13 +73,13 @@
                 {% for orgs in all_orgs.object_list %}
                     <dl class="des difdes">
                     <dt>
-                        <a href="org-detail-homepage.html">
+                        <a href="{% url 'org:org_home' orgs.pk %}">
                             <img width="200" height="120" class="scrollLoading" data-url="{{ MEDIA_URL }}{{ orgs.image }}"/>
                         </a>
                     </dt>
                     <dd>
                         <div class="clearfix">
-                             <a href="org-detail-homepage.html">
+                             <a href="{% url 'org:org_home' orgs.pk %}">
                                  <h1>{{ orgs.name }}</h1>
                                  <div class="pic fl">
 
@@ -144,15 +144,15 @@
 			<form class="rightform" id="jsStayForm">
 				<div>
                     <img src="{% static 'images/rightform1.png' %}"/>
-                    <input type="text" name="name" id="companyName" placeholder="名字" maxlength="25" />
+                    <input type="text" name="name" required id="companyName" placeholder="名字" maxlength="25" />
                 </div>
 				<div>
                     <img src="{% static 'images/rightform2.png' %}"/>
-                    <input type="text" name="phone_nums" id="companyMobile" placeholder="联系电话"/>
+                    <input type="text" name="phone_nums" required id="companyMobile" placeholder="联系电话"/>
                 </div>
 				<div>
                     <img src="{% static 'images/rightform3.png' %}"/>
-                    <input type="text" name="course_name" id="companyAddress" placeholder="课程名" maxlength="50" />
+                    <input type="text" name="course_name" required id="companyAddress" placeholder="课程名" maxlength="50" />
                 </div>
                 <p class="error company-tips" id="jsCompanyTips"></p>
 				<input class="btn" type="text" id="jsStayBtn" value="立即咨询 >" />
@@ -183,6 +183,7 @@
 <script type="text/javascript">
     $(function () {
         $('#jsStayBtn').on('click', function () {
+            $('#jsCompanyTips')[0].reset();
             $.ajax({
                 cache: false,
                 type: "POST",

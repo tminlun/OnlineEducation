@@ -1,6 +1,7 @@
 # _*_ encoding:utf-8 _*_
+import re
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger #分页
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from django.views.generic import View
 from django.http import JsonResponse
 from .models import CourseOrg, CityDict
@@ -27,7 +28,7 @@ class OrgView(View):
         #机构筛选
         city_id = request.GET.get("city", "") #?city={{ city.id }}
         if city_id:#注意：如果用户点击了筛选才进行筛选
-            all_orgs = all_orgs.filter(city_id=int(city_id)) #当传过来的city_id为1，就筛选city id=1的所有机构列表
+            all_orgs = all_orgs.filter(city_id=int(city_id)) #可以通过CourseOrg来筛选City：CourseOrg自带city_id
         #机构类别筛选
 
         category = request.GET.get("ct", "")
@@ -59,6 +60,7 @@ class OrgView(View):
             "category": category,
             "hot_orgs": hot_orgs,
             "sort": sort,
+
         })
 
 
@@ -71,7 +73,56 @@ class AddUserAskView(View):
     def post(self, request):
         userask_form = UserAskForm(request.POST)
         if userask_form.is_valid():
-            user_ask = userask_form.save(commit=True) #省去 request.POST.get和实例化，commit=True：可以存储进数据库
+            """
+            判断号码：如果规范保存进数据库(user_ask)，否 则返回错误
+            如果这样会出现错误：if p.match(phone_nums): #判断输入是否是一个手机号
+                   return phone_nums
+                else:
+                    raise forms.ValidationError("手机号不规范", code="phone_nums_inval")
+            """
+            phone_nums = request.POST.get("phone_nums", "")
+            REGEX_PHONE_NUMS = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"
+            p = re.compile(REGEX_PHONE_NUMS)
+            if not p.match(phone_nums):  # 判断输入是否是一个手机号
+                return JsonResponse({"status": "fail", "msg": "请输入11位数字"})
+
+            # 省去 request.POST.get和实例化，commit=True：可以存储进数据库
+            user_ask = userask_form.save(commit=True)
             return JsonResponse({'status': 'success'})
         else:
-           return JsonResponse({'status':'fail','msg':'输入错误'})
+           return JsonResponse({'status': 'fail', 'msg': '输入错误'}) #'msg': "{}".format(userask_form.errors.values())[11:].strip("()")
+
+
+class OrgDetailHome(View):
+    """
+    课程机构首页（不是列表）
+    获取具体的机构，同过外键（机构中外键、别的模型外键机构）来反向查询所有的课程、教师
+    记住每个课程的机构都是不同的，外键不同
+    org_base可以用org-detail-homepage的对象
+    """
+    def get(self, request, org_id):
+        current_page = 'home' #前端active（选中）判断是否为当前页面
+        detail_org = get_object_or_404(CourseOrg, pk=int(org_id)) #获取具体的机构
+        all_course = detail_org.course_set.all()[:3] #反向查询所有的课程
+        all_teacher = detail_org.teacher_set.all()[:1] #反向查询所有的教师
+        return render(request, 'org-detail-homepage.html',{
+            "all_course": all_course,
+            "all_teacher": all_teacher,
+            "detail_org": detail_org, # 为了显示org_base具体机构的图片
+            "current_page": current_page,
+        })
+
+
+class OrgDetailCourse(View):
+    """
+    课程机构课程
+    """
+    def get(self, request, org_id):
+        current_page = 'course'  # 前端active（选中）判断是否为当前页面
+        detail_org = get_object_or_404(CourseOrg, pk=int(org_id)) #获取具体的机构
+        all_course = detail_org.course_set.all()#反向查询所有的课程
+        return render(request, 'org-detail-course.html',{
+            "all_course": all_course,
+            "detail_org": detail_org, # 为了显示org_base具体机构的图片
+            "current_page": current_page,
+        })

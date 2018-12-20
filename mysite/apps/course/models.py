@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.db import models
-
+from organization.models import CourseOrg
 # Create your models here.
 #课程表
 class Course(models.Model):
@@ -10,6 +10,7 @@ class Course(models.Model):
         ('zj', '中级'),
         ('gj', '高级')
     )
+    course_org = models.ForeignKey(CourseOrg, null=True,blank=True, on_delete=models.CASCADE)#CourseOrg可反向查询它
     name = models.CharField(max_length=15,verbose_name="课程名")
     desc = models.CharField(max_length=200,verbose_name="课程描述")
     detail = models.TextField(verbose_name="课程详情")
@@ -17,7 +18,7 @@ class Course(models.Model):
     learn_times = models.IntegerField(default=0,verbose_name='学习时长(分钟)')
     students = models.IntegerField(default=0,verbose_name="学习人数")
     fav_nums = models.IntegerField(default=0,verbose_name="收藏人数")
-    image = models.ImageField(upload_to="course/%Y%m",default="course/default.png",verbose_name="封面图")
+    image = models.ImageField(upload_to="course/%Y%m",default="course/default.png",verbose_name="封面图",null=True,blank=True)
     click_nums = models.IntegerField(default=0,verbose_name="点击数")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间")#default和auto_now有冲突
 

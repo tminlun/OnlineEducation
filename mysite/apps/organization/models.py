@@ -17,7 +17,7 @@ class CityDict(models.Model):
         return self.name
 
 
-#CourseOrg  课程机构基本信息
+#CourseOrg  机构基本信息
 class CourseOrg(models.Model):
     name = models.CharField(max_length=50, verbose_name="机构名称")
     desc = models.TextField(verbose_name="机构的描述")
@@ -56,6 +56,7 @@ class Teacher(models.Model):
     points = models.CharField(max_length=50, verbose_name="公司职位")
     click_nums = models.IntegerField(default=0, verbose_name='点击数')
     fav_nums = models.IntegerField(default=0, verbose_name='收藏数')
+    image = models.ImageField(default="teacher/default_middile_1.png", verbose_name="老师头像",max_length=100,upload_to="teacher/%Y%m")
     add_time = models.DateTimeField(default=datetime.now, verbose_name='添加时间')
 
     class Meta:

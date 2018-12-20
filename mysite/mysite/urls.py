@@ -36,7 +36,7 @@ urlpatterns = [
     #找回密码链接,如果action="{% url 'reset_pwd' %}"会出错，因为这里url要有值传递给参数（active_code）
     re_path('reset/(?P<active_code>.*)/', ResetView.as_view(), name="reset_pwd"),
     path('modify_pwd/',ModifyPwdView.as_view(), name="modify_pwd"), #重设密码
-    path("org/", include('organization.urls', namespace="org")), #课程机构:前缀名（namespace="org" 防止冲突）
+    path("org/", include('organization.urls',namespace="org")), #课程机构:前缀名（namespace="org" 防止冲突）
     path('logout/',LogoutView.as_view(), name="logout"),#注销
 
 
