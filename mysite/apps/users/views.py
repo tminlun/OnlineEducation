@@ -50,7 +50,7 @@ class LoginView(View):
                     login(request, user)
                     return render(request, 'index.html')
                 else:
-                    #返回表单后，用户之前输入错误的账号密码还会保留在框中
+                    #返回login_form后，用户之前输入错误的账号密码还会保留在框中
                     return render(request, 'login.html', {'msg': '用户为激活', 'login_form': login_form})
             else:
                 return render(request,'login.html', {'msg': '用户或者密码错误'})#查询数据库出错，返回自己定义的错误，不用返回表单
@@ -102,7 +102,7 @@ class RegisterView(View):
             user_profile.username = user_name
             user_profile.email = user_email
             user_profile.password = make_password(pass_word_again)# 对注册的密码加密
-            user_profile.is_active = False #让用户手动激活,默认为为激活
+            user_profile.is_active = False #让用户手动激活,默认为未激活
             user_profile.save()# 然后保存
             send_register_email(user_email, 'register')# 发送邮箱,注册类型
             return render(request, 'login.html')#注册完跳到登录页面

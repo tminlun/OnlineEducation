@@ -4,6 +4,9 @@ from django.db import models
 # Create your models here.
 
 class CityDict(models.Model):
+    """
+    机构城市
+    """
     name = models.CharField(max_length=20,verbose_name="城市")
     desc = models.CharField(max_length=200,verbose_name="描述")
     add_time = models.DateTimeField(default=datetime.now,verbose_name="创建时间")
@@ -56,7 +59,7 @@ class Teacher(models.Model):
     points = models.CharField(max_length=50, verbose_name="公司职位")
     click_nums = models.IntegerField(default=0, verbose_name='点击数')
     fav_nums = models.IntegerField(default=0, verbose_name='收藏数')
-    image = models.ImageField(default="teacher/default_middile_1.png", verbose_name="老师头像",max_length=100,upload_to="teacher/%Y%m")
+    image = models.ImageField(default="teacher/default_middile_1.png", verbose_name="老师头像",max_length=100,upload_to="teacher/%Y%m",null=True, blank=True)
     add_time = models.DateTimeField(default=datetime.now, verbose_name='添加时间')
 
     class Meta:

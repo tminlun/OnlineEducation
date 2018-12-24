@@ -48,6 +48,9 @@ class CourseComments(models.Model):
 
 #UserCourse 用户学习的课程
 class UserCourse(models.Model):
+    """
+    用户学习的课程,可以用到"UserProfile"的字段
+    """
     user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,verbose_name="用户")
     course = models.ForeignKey(Course,on_delete=models.CASCADE,verbose_name="学习的课程")
     add_time = models.DateTimeField(default=datetime.now,verbose_name="学习时间")
@@ -59,6 +62,9 @@ class UserCourse(models.Model):
 
 #Favorite 用户收藏
 class UserFavorite(models.Model):
+    """
+    用户收藏
+    """
     favorite_choices = (
         (1, '课程'),
         (2, '机构'),

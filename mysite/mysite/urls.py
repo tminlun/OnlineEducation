@@ -38,7 +38,7 @@ urlpatterns = [
     path('modify_pwd/',ModifyPwdView.as_view(), name="modify_pwd"), #重设密码
     path("org/", include('organization.urls',namespace="org")), #课程机构:前缀名（namespace="org" 防止冲突）
     path('logout/',LogoutView.as_view(), name="logout"),#注销
-
+    path('course/',include("course.urls", namespace="course")), #公开课
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

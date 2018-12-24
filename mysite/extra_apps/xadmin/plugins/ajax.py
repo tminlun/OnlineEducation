@@ -18,7 +18,7 @@ class BaseAjaxPlugin(BaseAdminPlugin):
 class AjaxListPlugin(BaseAjaxPlugin):
     
     def get_list_display(self,list_display):
-        list_fields = [field for field in self.request.GET.get('_fields',"").split(",") 
+        list_fields = [field for field in self.request.GET.get('_fields',"").split(",")
                                 if field.strip() != ""]
         if list_fields:
             return list_fields
