@@ -13,17 +13,18 @@ class Course(models.Model):
         ('zj', '中级'),
         ('gj', '高级')
     )
-    course_org = models.ForeignKey(CourseOrg, null=True,blank=True, on_delete=models.CASCADE)#CourseOrg可反向查询它
-    name = models.CharField(max_length=15,verbose_name="课程名")
-    desc = models.CharField(max_length=200,verbose_name="课程描述")
+    course_org = models.ForeignKey(CourseOrg, null=True, blank=True, on_delete=models.CASCADE)#CourseOrg可反向查询它
+    name = models.CharField(max_length=15, verbose_name="课程名")
+    desc = models.CharField(max_length=200, verbose_name="课程描述")
     detail = models.TextField(verbose_name="课程详情")
-    degree = models.CharField(max_length=10, choices=degree_choices,verbose_name="难度")
-    learn_times = models.IntegerField(default=0,verbose_name='学习时长(分钟)')
-    students = models.IntegerField(default=0,verbose_name="学习人数")
-    fav_nums = models.IntegerField(default=0,verbose_name="收藏人数")
-    image = models.ImageField(upload_to="course/%Y%m",default="course/default.png",verbose_name="封面图",null=True,blank=True)
+    degree = models.CharField(max_length=10, choices=degree_choices, verbose_name="难度")
+    learn_times = models.IntegerField(default=0, verbose_name='学习时长(分钟)')
+    students = models.IntegerField(default=0, verbose_name="学习人数")
+    fav_nums = models.IntegerField(default=0, verbose_name="收藏人数")
+    image = models.ImageField(upload_to="course/%Y%m",default="course/default.png", verbose_name="封面图", null=True, blank=True)
     click_nums = models.IntegerField(default=0, verbose_name="点击数")
-    category = models.CharField(default="后端开发",max_length=20, verbose_name="课程类别")
+    category = models.CharField(default="后端开发", max_length=20, verbose_name="课程类别")
+    tag = models.CharField(max_length=20, default="", verbose_name="相关课程")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间")#default和auto_now有冲突
 
     class Meta:
@@ -36,14 +37,22 @@ class Course(models.Model):
         """反向查询所有的章节数，（章节有了此外键）"""
         return self.lesson_set.all().count()
 
-    #课程学习的用户
+    #学习用户
     def get_user_course(self):
+        """
+        反向查询所有的 用户学习的课程，从而查询 UserCourse / user，从user得到user.imag
+        :return:
+        """
         return self.usercourse_set.all()[:5]
 
     #教师数量
     def get_teacher_nums(self):
         """当前模型指向外键，则（self.course_org）就获取到了（外键的所有”字段“和”外键的外键字段“）"""
         return self.course_org.teacher_set.all().count()
+
+    def get_lesson(self):
+        #获取章节
+        return self.lesson_set.all()
 
     def __str__(self):
         return self.name
@@ -59,6 +68,10 @@ class Lesson(models.Model):
         verbose_name = "课程的章节"
         verbose_name_plural = verbose_name
 
+    def get_video(self):
+        #获取所有的视频
+        return self.video_set.all()
+
     def __str__(self):
         return "《{0}》的第{1}章节".format(self.course, self.name)
 
@@ -67,12 +80,16 @@ class Lesson(models.Model):
 class Video(models.Model):
     lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE,verbose_name="章节")
     name = models.CharField(max_length=100, verbose_name="视频名")
+    url = models.CharField(max_length=200, default="", verbose_name="访问地址")
+    learn_times = models.IntegerField(default=0, verbose_name='学习时长(分钟)')
     add_time = models.DateTimeField(default=datetime.now,verbose_name="添加视频时间")
 
     class Meta:
         verbose_name = "章节的视频"
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return self.name
 
 #课程资源
 class CourseResource(models.Model):

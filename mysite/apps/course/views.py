@@ -1,7 +1,9 @@
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger #分页
 from django.shortcuts import render,get_object_or_404
 from django.views.generic import View
+from django.http import JsonResponse
 from operation.models import UserCourse
+from operation.models import UserFavorite
 from .models import Course
 # Create your views here.
 
@@ -38,11 +40,56 @@ class CourseListView(View):
 
 
 class CourseDetailView(View):
+
     def get(self, request, course_id):
+        current_list = "course_list"
         course_detail = get_object_or_404(Course, pk=course_id)#具体的
 
-        user_course = UserCourse.objects.filter(course=course_detail)
-        return render(request, 'course-detail.html', {
+        # 每一次点击（点击数）加1
+        if not request.COOKIES.get("%s_pk" % course_detail.pk):
+            course_detail.click_nums += 1
+            course_detail.save()
+
+        """前端的ajax可以使用以前写的收藏代码: url:"{% url 'org:add_fav' %}",因为逻辑是一样的
+        {% if has_org_fav  %}已收藏{% else %}收藏{% endif %}判断是否收藏，
+            如果有has_course_fav则显示"已收藏"，否 显示"收藏"
+            (如果没有加{% else %}如果没有收藏显示不出来)
+        """
+        has_course_fav = False
+        has_org_fav = False
+        # 必须是用户已登录我们才需要判断。
+        if UserFavorite.objects.filter(user=request.user, fav_id=course_detail.pk, fav_type=1):
+            has_course_fav = True
+        if UserFavorite.objects.filter(user=request.user, fav_id=course_detail.course_org.pk, fav_type=2):
+            has_org_fav = True
+
+        # 得到相关课程：1、得到页面的课程对象，再对Coures进行筛选
+        tag = course_detail.tag
+        if tag:  # 查询此课程是否相关课程
+            #必须从1开始不然会推荐自己为相关课程
+            relate_courses = Course.objects.filter(tag=tag)[1:2]
+        else:
+            relate_courses = []  # 因为前端是for循环，所有要返回数组
+        response = render(request, 'course-detail.html', {
             "course_detail": course_detail,
-            "user_course": user_course,
+            "current_list": current_list,  # 当前页面 active
+            "relate_courses": relate_courses,
+            "has_course_fav": has_course_fav,#课程收藏
+            "has_org_fav": has_org_fav,#机构收藏
+        })
+        response.set_cookie("%s_pk" % course_detail.pk, 'true')
+        return response
+
+
+class CourseInfoView(View):
+    """
+    课程信息：course_id：具体课程
+    """
+    def get(self, request, course_id):
+        current_list = "course_list"
+        course_detail = get_object_or_404(Course, pk=course_id)
+
+        return render(request, "course-video.html", {
+            "course_detail": course_detail,
+            "current_list": current_list,  # 当前页面 active
         })

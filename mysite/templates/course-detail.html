@@ -61,9 +61,9 @@
 						</ul>
 						<div class="btns">
 							<div class="btn colectgroupbtn"  id="jsLeftBtn">
-                                  收藏
+                                  {% if has_course_fav %}已收藏{% else %}收藏{% endif %}
                             </div>
-                                <div class="buy btn"><a style="color: white" href="course-video.html">开始学习</a></div>
+                                <div class="buy btn"><a style="color: white" href="{% url 'course:course_info' course_detail.id  %}">开始学习</a></div>
 						</div>
 					</div>
                     <div class="group-share-box">
@@ -97,7 +97,8 @@
                     </a>
 					<div class="btn  notlogin
 					     "data-favid="14" id="jsRightBtn">
-                         已收藏
+
+                         {% if has_org_fav  %}已收藏{% else %}收藏{% endif %}
                     </div>
 					<div class="clear">
 						<ul>
@@ -110,7 +111,7 @@
 							<li>所在地区：&nbsp;&nbsp;{{ course_detail.course_org.address }}</li>
 							<li>认&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;证&nbsp;:
                                 &nbsp;&nbsp;
-								    <img title="金牌机构", src="../images/gold.png"/>
+								    <img title="金牌机构", src="{% static 'images/gold.png' %}"/>
 							</li>
 						</ul>
 					</div>
@@ -129,7 +130,7 @@
 					</ul>
 				</div>
 				<div class="tab_cont tab_cont1">
-                    <p>{{ course_detail.desc }}</p>
+                    <p>{{ course_detail.detail }}</p>
 
 				</div>
 				<div class="tab_cont tab_cont2" >
@@ -143,19 +144,21 @@
 			<div class="right layout">
 				<div class="head">相关课程推荐</div>
                 <div class="group_recommend">
-
+                    {% for relate_course in relate_courses %}
                         <dl>
                             <dt>
                                 <a target="_blank" href="">
-                                    <img width="240" height="220" class="scrollLoading" src="../media/courses/2016/11/540e57300001d6d906000338-240-135_mvvGYHL.jpg"/>
+                                    <img width="240" height="220" class="scrollLoading" src="{{ MEDIA_URL }}{{ relate_course.image }}"/>
                                 </a>
                             </dt>
                             <dd>
-                                <a target="_blank" href=""><h2> django实战项目</h2></a>
-                                <span class="fl">学习时长：<i class="key">0</i></span>
+                                <a target="_blank" href=""><h2>{{ relate_course.name }}</h2></a>
+                                <span class="fl">学习时长：<i class="key">{{ relate_course.learn_times }}</i></span>
                             </dd>
                         </dl>
-
+                    {% empty %}
+                        <p>--暂无相关课程--</p>
+                    {% endfor %}
 
 
                 </div>
@@ -165,3 +168,40 @@
 </section>
 {% endblock %}
 
+{% block custom_js %}
+    <script type="text/javascript">
+        //收藏分享
+function add_fav(current_elem, fav_id, fav_type){
+    $.ajax({
+        cache: false,
+        type: "POST",url:"{% url 'org:add_fav' %}",
+        url:"{% url 'org:add_fav' %}",
+        data:{'fav_id':fav_id, 'fav_type':fav_type},//数据传给后端
+        async: true,
+        beforeSend:function(xhr, settings){
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+        success: function(data) {
+            if(data.status == 'fail'){
+                if(data.msg == '用户未登录'){
+                    window.location.href="{% url 'login' %}";
+                }else{
+                    alert(data.msg)
+                }
+
+            }else if(data.status == 'success'){
+                current_elem.text(data.msg)
+            }
+        },
+    });
+}
+//课程收藏
+$('.colectgroupbtn').on('click', function(){
+    add_fav($(this), {{ course_detail.id }}, 1);
+});
+//机构收藏
+$('.notlogin').on('click', function(){
+    add_fav($(this), {{ course_detail.course_org.id }}, 2);
+});
+    </script>
+{% endblock %}
