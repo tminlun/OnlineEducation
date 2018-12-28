@@ -58,8 +58,8 @@
             <div class="content">
                 <div class="mod-tab-menu">
                     <ul class="course-menu clearfix">
-                        <li><a class="ui-tabs-active active" id="learnOn"  href="course-video.html"><span>章节</span></a></li>
-                        <li><a id="commentOn" class="" href="course-comment.html"><span>评论</span></a></li>
+                        <li><a class="ui-tabs-active active" id="learnOn"  href="{% url 'course:course_info' course_detail.pk %}"><span>章节</span></a></li>
+                        <li><a id="commentOn" class="" href="{% url 'course:course_comment' course_detail.pk %}"><span>评论</span></a></li>
                     </ul>
                 </div>
                 <div id="notice" class="clearfix">
@@ -73,24 +73,16 @@
                             <strong><i class="state-expand"></i>{{ lesson.name }}</strong>
                         </h3>
                         <ul class="video">
-
-                            <li>
-                                <a target="_blank" href='{{ lesson.get_video.url }}' class="J-media-item studyvideo">{{ lesson.get_video.name }}{{ lesson.get_video.learn_times }}
+                            {% for lesson_video in lesson.get_lesson_video %}
+                                <li>
+                                <a target="_blank" href='{{ lesson_video.url }}' class="J-media-item studyvideo">{{ lesson_video.name }}（{{ lesson_video.learn_times }}）
                                     <i class="study-state"></i>
                                 </a>
                             </li>
+                            {% empty %}
+                                <p>--暂无视频--</p>
+                            {% endfor %}
 
-                            <li>
-                                <a target="_blank" href='/video/3662' class="J-media-item studyvideo">1.2 基本概念 (0)
-                                    <i class="study-state"></i>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a target="_blank" href='/video/3662' class="J-media-item studyvideo">django settings.py 配置 (0)
-                                    <i class="study-state"></i>
-                                </a>
-                            </li>
 
                         </ul>
                     </div>
@@ -108,33 +100,33 @@
                     <div class="box mb40">
                         <h4>资料下载</h4>
                         <ul class="downlist">
-
+                        {% for course_resource in course_resources %}
                             <li>
-                                <span ><i class="aui-iconfont aui-icon-file"></i>&nbsp;&nbsp;前端页面</span>
-                                <a href="{% static '' %}media/course/resource/2016/11/media.zip" class="downcode" target="_blank" download="" data-id="274" title="">下载</a>
+                                <span ><i class="aui-iconfont aui-icon-file"></i>&nbsp;&nbsp;{{ course_resource.name }}</span>
+                                <a href="{{ MEDIA_URL }}{{ course_resource.download }}" class="downcode" target="_blank" download="" data-id="274" title="">下载</a>
                             </li>
-
+                        {% endfor %}
                         </ul>
                     </div>
                     <div class="box mb40">
                         <h4>讲师提示</h4>
                         <div class="teacher-info">
                             <a href="/u/315464/courses?sort=publish" target="_blank">
-                                <img src='{% static '' %}media/teacher/2016/11/aobama_CXWwMef.png' width='80' height='80' />
+                                <img src='{{ MEDIA_URL }}{{ course_detail.teachers.image }}' width='80' height='80' />
                             </a>
         <span class="tit">
-          <a href="/u/315464/courses?sort=publish" target="_blank">bobby</a>
+          <a href="/u/315464/courses?sort=publish" target="_blank">{{ course_detail.teachers.name }}</a>
         </span>
-                            <span class="job">xxx</span>
+                            <span class="job">{{ course_detail.teachers }}</span>
                         </div>
                         <div class="course-info-tip">
                             <dl class="first">
                                 <dt>课程须知</dt>
-                                <dd class="autowrap">python基础你需要有</dd>
+                                <dd class="autowrap">{{ course_detail.instructions }}</dd>
                             </dl>
                             <dl>
                                 <dt>老师告诉你能学到什么？</dt>
-                                <dd class="autowrap">django的进阶开发</dd>
+                                <dd class="autowrap">{{ course_detail.teacher_tell }}</dd>
                             </dl>
                         </div>
                     </div>

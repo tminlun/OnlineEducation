@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.db import models
-from organization.models import CourseOrg
+from organization.models import CourseOrg, Teacher
 # Create your models here.
 
 
@@ -24,7 +24,11 @@ class Course(models.Model):
     image = models.ImageField(upload_to="course/%Y%m",default="course/default.png", verbose_name="封面图", null=True, blank=True)
     click_nums = models.IntegerField(default=0, verbose_name="点击数")
     category = models.CharField(default="后端开发", max_length=20, verbose_name="课程类别")
-    tag = models.CharField(max_length=20, default="", verbose_name="相关课程")
+    tag = models.CharField(max_length=20, default="", verbose_name="相关课程",null=True, blank=True)
+    # teacher = models.ForeignKey(Teacher,on_delete=models.CASCADE,verbose_name='讲师',null=True,blank=True)#此课程的教师
+    teachers = models.ForeignKey(Teacher, on_delete=models.CASCADE,verbose_name="教师", null=True, blank=True)
+    instructions = models.CharField('课程须知',max_length=300,default='')
+    teacher_tell = models.CharField('老师告诉你',max_length=300,default='')
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间")#default和auto_now有冲突
 
     class Meta:
@@ -68,8 +72,8 @@ class Lesson(models.Model):
         verbose_name = "课程的章节"
         verbose_name_plural = verbose_name
 
-    def get_video(self):
-        #获取所有的视频
+    def get_lesson_video(self):
+        #获取"所有"的视频，在前端要遍历
         return self.video_set.all()
 
     def __str__(self):
@@ -78,7 +82,7 @@ class Lesson(models.Model):
 
 #（视频）章节里面有视频
 class Video(models.Model):
-    lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE,verbose_name="章节")
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name="章节")
     name = models.CharField(max_length=100, verbose_name="视频名")
     url = models.CharField(max_length=200, default="", verbose_name="访问地址")
     learn_times = models.IntegerField(default=0, verbose_name='学习时长(分钟)')
@@ -102,3 +106,5 @@ class CourseResource(models.Model):
         verbose_name = "课程资源"
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return self.name

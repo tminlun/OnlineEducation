@@ -45,6 +45,8 @@ class CourseComments(models.Model):
         verbose_name = "用户评论"
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return "{0}添加：{1}评论".format(self.user, self.course)
 
 #UserCourse 用户学习的课程
 class UserCourse(models.Model):
