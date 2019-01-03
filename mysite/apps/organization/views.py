@@ -4,8 +4,10 @@ from pure_pagination import Paginator, EmptyPage, PageNotAnInteger #分页
 from django.shortcuts import render,get_object_or_404
 from django.views.generic import View
 from django.http import JsonResponse
+from django.db.models import Q
 from operation.models import UserFavorite
-from .models import CourseOrg, CityDict
+from course.models import Course
+from .models import CourseOrg, CityDict, Teacher
 from .forms import UserAskForm
 # Create your views here.
 
@@ -22,10 +24,17 @@ class OrgView(View):
     当他点击了对应的city.id超链接，就返回对应的city.id机构列表：all_orgs = all_orgs.filter(city_id=int(city_id))
     """
     def get(self,request):
-        current_list = "org_list"
         all_orgs = CourseOrg.objects.all() #所有的机构
         hot_orgs = all_orgs.order_by("-click_nums")[:3] #（机构排名）对所有的课程点击数进行排序,并取得前3个
         all_citys = CityDict.objects.all()#所有的机构城市
+
+        # 全局搜索
+        search_keywords = request.GET.get('keywords', '')  # 获取用户输入的值
+        if search_keywords:  # 如果获取的了
+            # 进行Q查询,包含（__icontains：加了i则不区分大小写）,查询完毕返回值（all_course）
+            all_orgs = all_orgs.filter(Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords)
+                                            | Q(category__icontains=search_keywords)
+                                           )
 
         #机构筛选
         city_id = request.GET.get("city", "") #?city={{ city.id }}
@@ -62,7 +71,6 @@ class OrgView(View):
             "category": category,
             "hot_orgs": hot_orgs,
             "sort": sort,
-            "current_list": current_list,
         })
 
 
@@ -209,3 +217,73 @@ class AddFavView(View):
                 return JsonResponse({"status": "success", "msg": "已收藏"})
             else:
                 return JsonResponse({"status": "fail", "msg": "收藏出错"})
+
+
+class TeacherListView(View):
+    """教师机构"""
+    def get(self, request):
+        all_teacher = Teacher.objects.all()
+
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:#如果获取到用户输入的值
+            all_teacher = all_teacher.filter(Q(name__icontains=search_keywords)
+                                             |Q(work_company=search_keywords)
+                                             |Q(points__icontains=search_keywords))
+
+
+        #人气排序
+        sort = request.GET.get('sort', '')
+        if sort:#如果点击了
+            all_teacher = all_teacher.order_by('-click_nums')
+        #教师排行
+        sorted_teachers = all_teacher.order_by('-click_nums')[:3]
+
+        #分页
+        # 分页功能
+        try:
+            page = request.GET.get('page', 1)  # 获取n（page=n）,默认显示第一页
+        except PageNotAnInteger:
+            page = 1  # 出现异常显示第一页
+        p = Paginator(all_teacher, 1, request=request)  # 进行分页，每5个作为一页
+        teachers = p.page(page)  # 获取当前页面
+
+        # 总共有多少老师使用count进行统计
+        teacher_count = all_teacher.count()
+
+        return render(request, 'teachers-list.html',{
+            "all_teacher": teachers,
+            "sort": sort,
+            "teacher_count": teacher_count,
+            "sorted_teachers": sorted_teachers,
+        })
+
+
+class TeacherDetailView(View):
+    """教师详情页：具体教师的课程、教师的机构、收藏（教师、机构）"""
+    def get(self, request, teacher_id):
+
+        teacher_detail = Teacher.objects.get(pk=int(teacher_id))#具体教师
+        teacher_courses = Course.objects.filter(teachers=teacher_detail)#教师相关课程
+        teacher_org = CourseOrg.objects.get(teacher=teacher_detail) #教师相关机构
+
+        # 教师排行
+        all_teacher = Teacher.objects.all()
+        sorted_teachers = all_teacher.order_by('-click_nums')[:3]
+        #收藏
+        has_teacher_fav = False
+        has_org_fav = False
+        if request.user.is_authenticated:#如果登录
+            if UserFavorite.objects.filter(user=request.user, fav_id=teacher_detail.id, fav_type=3):
+                has_teacher_fav = True #如果数据库存在（{% if has_teacher_fav） %}，已收藏
+            if UserFavorite.objects.filter(user=request.user, fav_id=teacher_org.id, fav_type=2):
+                has_org_fav = True #如果数据库存在（{% if has_teacher_fav） %}，已收藏
+        return render(request, 'teacher-detail.html', {
+
+            "teacher_detail": teacher_detail,
+            "teacher_courses": teacher_courses,
+            "teacher_org": teacher_org,
+            "sorted_teachers": sorted_teachers,
+            "has_teacher_fav": has_teacher_fav,#教师收藏
+            "has_org_fav": has_org_fav,#机构收藏
+        })
+

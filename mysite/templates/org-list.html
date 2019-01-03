@@ -17,7 +17,7 @@
         <div class="wp">
             <ul  class="crumbs">
                 <li><a href="{% url 'index' %}">首页</a>></li>
-                <li>课程机构</li>
+                <li>授课教师</li>
             </ul>
         </div>
     </section>
@@ -194,6 +194,7 @@
                     if (data['status'] == 'success') {
                         $('#jsStayForm')[0].reset(); //清空表单
                         alert("提交成功");
+
                     } else if (data['status'] == 'fail') {
                         $('#jsCompanyTips').html(data['msg']); //传递错误
                     }

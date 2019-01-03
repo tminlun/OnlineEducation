@@ -95,6 +95,7 @@ class Video(models.Model):
     def __str__(self):
         return self.name
 
+
 #课程资源
 class CourseResource(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="课程")

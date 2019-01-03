@@ -60,19 +60,22 @@ function getCookie(name) {
 
 //顶部搜索栏搜索方法
 function search_click(){
-    var type = $('#jsSelectOption').attr('data-value'),
-        keywords = $('#search_keywords').val(),
-        request_url = '';
+    var type = $('#jsSelectOption').attr('data-value'), //选择哪个类型（公开课、课程机构、机构教师）
+        keywords = $('#search_keywords').val(),//1、获取用户输入（search_keywords）的值
+        request_url = ''; //根据type获取到url，再通过此url跳转到 要搜索的页面
     if(keywords == ""){
-        return
+        return //如果用户输入为空，刷新页面（返回空）
     }
+    //根据选择类型 传递不同url
     if(type == "course"){
-        request_url = "/course/list?keywords="+keywords
+        //2、把输入的值？keywords=传递给后端：GET.get('keywords', '')
+        request_url = "/course/course_list?keywords="+keywords
     }else if(type == "teacher"){
-        request_url = "/org/teacher/list?keywords="+keywords
+        request_url = "/org/teacher_list?keywords="+keywords
     }else if(type == "org"){
-        request_url = "/org/list?keywords="+keywords
+        request_url = "/org/org_list?keywords="+keywords
     }
+    //点击搜索后，转跳页面
     window.location.href = request_url
 }
 

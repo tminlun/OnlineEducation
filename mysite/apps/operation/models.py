@@ -44,6 +44,7 @@ class CourseComments(models.Model):
     class Meta:
         verbose_name = "用户评论"
         verbose_name_plural = verbose_name
+        ordering = ["-add_time"]
 
     def __str__(self):
         return "{0}添加：{1}评论".format(self.user, self.course)
@@ -61,6 +62,8 @@ class UserCourse(models.Model):
         verbose_name = "用户学习的课程"
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return "{0}添加课程:'{1}'".format(self.user, self.course)
 
 #Favorite 用户收藏
 class UserFavorite(models.Model):

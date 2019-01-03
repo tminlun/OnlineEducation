@@ -72,7 +72,7 @@ class ActiveUserView(View):
                 user.save() #保存
         else:
             return render(request, 'active_fail.html') #验证码输入错误
-        return render(request, 'login.html')#激活成功（打开url页面）返回登录页面
+        return redirect('login', reverse('index'))#激活成功（打开url页面）返回登录页面
 
 
 class RegisterView(View):
