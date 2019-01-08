@@ -6,7 +6,7 @@ from organization.models import CourseOrg, Teacher
 
 #课程表
 class Course(models.Model):
-    """课程难度"""
+    """课程"""
     degree_choices = (
         #在模板显示值：{{ hot_course.get_degree_display }}
         ('cj', '初级'),

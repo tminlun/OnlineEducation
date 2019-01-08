@@ -4,7 +4,7 @@ __author__: '田敏伦'
 __date__: '2018/12/24 0024 19:21'
 
 from django.urls import path
-from .views import CourseListView, CourseDetailView, CourseInfoView, CourseCommentView, AddCommentView,VideoPlayView
+from .views import CourseListView, CourseDetailView, CourseInfoView, CourseCommentView, AddCommentView,VideoPlayView,ReplyCommentView
 
 app_name = "course"
 urlpatterns = [
@@ -13,5 +13,6 @@ urlpatterns = [
     path('course_info/<int:course_id>', CourseInfoView.as_view(), name="course_info"),#课程信息（章节、视频）
     path('course_comment/<int:course_id>', CourseCommentView.as_view(), name="course_comment"),#课程评论
     path('add_comment/', AddCommentView.as_view(), name="add_comment"),#评论功能
+    path('reply_comment/', ReplyCommentView.as_view(), name="reply_comment"),#回复功能
     path('video_play/<int:video_id>', VideoPlayView.as_view(), name="video_play"),#课程视频
 ]

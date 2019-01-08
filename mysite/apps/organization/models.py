@@ -45,6 +45,10 @@ class CourseOrg(models.Model):
         return self.name
 
     def descs(self):
+        """
+        对后台文字进行限制
+        :return: descs
+        """
         if len(str(self.desc)) > 65:
             return "{}...".format(str(self.desc))[0:65]
         else:

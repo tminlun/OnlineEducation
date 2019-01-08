@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from operation.models import UserFavorite, CourseComments, UserCourse
 from utils.mixin_utils import LoginRequiredMixin
+from users.models import UserProfile
 from .models import Course, CourseResource, Video
 # Create your views here.
 
@@ -138,7 +139,7 @@ class CourseCommentView(LoginRequiredMixin, View):
         current_list = "course_list"
         course_detail = get_object_or_404(Course, pk=course_id)
         all_resources = CourseResource.objects.filter(course=course_detail)  # 哪个课程的资源
-        all_course_comment = CourseComments.objects.filter(course=course_detail)#所有的评论
+        all_course_comment = CourseComments.objects.filter(course=course_detail,root=None)#所有的评论
         # 相关课程推荐
         # 找到学习这门课的所有用户
         user_courses = UserCourse.objects.filter(course=course_detail)
@@ -159,15 +160,31 @@ class CourseCommentView(LoginRequiredMixin, View):
         })
 
 
+def Success(msg):
+    """ajax成功"""
+    data = {}
+    data['status'] = 'success'
+    data['msg'] = msg
+    return JsonResponse(data)
+
+
+def Fail(msg):
+    """ajax失败"""
+    data = {}
+    data['status'] = 'fail'
+    data['msg'] = msg
+    return JsonResponse(data)
+
+
 class AddCommentView(View):
     """
     评论功能
     """
     def post(self, request):
-        obj_id = request.POST.get('course_id', 0)
-        comments = request.POST.get('comments', '')
+        obj_id = request.POST.get('course_id', 0) #对象pk
+        comments = request.POST.get('comments', '') #评论内容
         if not request.user.is_authenticated:
-            return JsonResponse({'status': 'fail', 'msg': '用户未登录'})
+            return Fail('用户未登录')
         #实例化
         course_comments = CourseComments()
         #如果获取有效的
@@ -176,9 +193,48 @@ class AddCommentView(View):
             course_comments.course = Course.objects.get(pk=int(obj_id)) #评论的对象
             course_comments.comment = comments
             course_comments.save()
-            return JsonResponse({'status': 'success', 'msg': '评论成功'})
+            return Success('评论成功')
         else:
-            return JsonResponse({'status': 'fail', 'msg': '评论失败'})
+            return Fail('评论失败')
+
+
+class ReplyCommentView(View):
+    """回复功能"""
+    def post(self,request):
+
+        root_id = int(request.POST.get('root_comment_id', 0))#顶级评论的id
+        reply_id = int(request.POST.get('reply_comment_id', 0))#上一级回复的id
+        reply_user_id = int(request.POST.get('reply_user_id', 0))#上一级回复user的id
+        course_id = request.POST.get('course_id', 0)  # 课程id
+
+        root_comment_text = request.POST.get('comment', '')#回复顶级评论的内容
+        ptn_text = request.POST.get('ptn', '')#回复回复评论的内容
+
+
+        try:
+            root_id = CourseComments.objects.get(pk=root_id)#获取"一个"评论对象（顶级评论）
+            reply_id = CourseComments.objects.get(pk=reply_id)
+            reply_user_id = UserProfile.objects.get(pk=reply_user_id) #回复给谁
+        except:
+            return Fail('回复失败')
+
+        #回复内容传递给数据库
+        course_comment = CourseComments()
+        course_comment.user = request.user #回复的作者
+        course_comment.course = Course.objects.get(pk=course_id)
+        course_comment.root = root_id
+        course_comment.parent = reply_id
+        course_comment.reply_to = reply_user_id
+        if ptn_text == '':#如果回复评论的内容为空，则把回复顶级内容赋值给评论内容
+            if root_comment_text == '':#如果回复顶级内容为空，抛出错误
+                return Fail('回复不能为空')
+            course_comment.comment = root_comment_text
+        else:
+            if ptn_text == '':#如果回复回复评论内容为空，抛出错误
+                return Fail('回复不能为空')
+            course_comment.comment = ptn_text
+        course_comment.save()
+        return Success('评论成功') #坑，保存数据库后，记得返回ajax成功信息使得刷新页面
 
 
 class VideoPlayView(View):

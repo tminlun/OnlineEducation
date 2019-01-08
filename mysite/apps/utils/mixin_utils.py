@@ -13,5 +13,6 @@ class LoginRequiredMixin(object):
     在django中已Mixin结尾的，就代表最基本的View
     """
     @method_decorator(login_required(login_url="/login/", redirect_field_name='/course_detail/'))
+    # 固定写法
     def dispatch(self,request,*args,**kwargs):
         return super(LoginRequiredMixin, self).dispatch(request,*args,**kwargs)

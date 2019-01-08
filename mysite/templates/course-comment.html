@@ -2,12 +2,16 @@
 {% load staticfiles %}
 
 {% block custom_css %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="{% static 'css/muke/course/learn-less.css' %}" />
 	<link rel="stylesheet" type="text/css" href="{% static 'css/muke/course/course-comment.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/muke/base.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/muke/common-less.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/muke/course/common-less.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/mooc.css' %}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 {% endblock %}
 
 {# 面包屑 #}
@@ -76,6 +80,17 @@
                         <p class="global-errortip js-global-error"></p>
                     </div>
                     <div id="course_note">
+                    {# 第三方 #}
+                        {# 上一级评论的主键 #}
+                        <input type="hidden" id="reply_comment_id" name="reply_comment_id">
+                        {# 上一级评论的主键end #}
+                        {# 顶级评论pk #}
+                        <input type="hidden" id="root_comment_id" name="root_comment_id">
+                        {# 顶级评论end #}
+                        {# 上一级评论的user的主键 #}
+                        <input type="hidden" id="reply_user_id" name="reply_user_id">
+                        {# 上一级评论的主键end #}
+                    {# 第三方end #}
                         <ul class="mod-post" id="comment-list">
                             {% for course_comment in all_course_comment %}
                                 <li class="post-row">
@@ -90,7 +105,53 @@
                                     <div class="footer clearfix">
                                         <span title="创建时间" class="l timeago">{{ course_comment.add_time }}</span>
                                     </div>
+                                    {# 顶级回复框 #}
+                                    <a style="position: relative;left: 48em;bottom: 4em;" class="btn btn-primary " data-toggle="collapse" href="#collapseExample_{{ course_comment.pk }}" aria-expanded="false" aria-controls="collapseExample" onclick="reply({{ course_comment.pk }},{{ course_comment.user.id }},{{ course_comment.pk }});">
+                                      回复顶级评论
+                                    </a>
+                                    <div class="collapse" id="collapseExample_{{ course_comment.pk }}">
+                                          <div class="well">
+
+                                            <input class="comment" name="reply_text">{# 顶级回复内容 #}
+{#                                                value="回复{{ comment.user.username }}" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '回复{{ comment.user.username }}';}"#}
+                                            </input>
+                                            <a class="btn btn-primary reply-submit">回复</a>
+
+                                          </div>
+                                    </div>
+                                    {# 顶级回复框end #}
                                 </div>
+                                {# 回复 #}
+                                    {% for reply in course_comment.root_comment.all %}
+                                      <div class="media">
+                                    <span target="_blank"><img src='{{ MEDIA_URL }}{{ reply.user.image }}' width='40' height='40' /></span>
+                                </div>
+                                        <div class="bd">
+                                            <div class="tit">
+                                                <span target="_blank">{{ reply.user.username }}回复</span><span target="_blank">{{ reply.reply_to.username }}</span>
+                                            </div>
+                                            <p class="cnt">{{ reply.comment }}</p>
+                                            <div class="footer clearfix">
+                                                <span title="创建时间" class="l timeago">{{ reply.add_time }}</span>
+                                        </div>
+                                    {# 上一级评论回复，点击了onclick才获取值 #}
+                                        <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseExample_{{ reply.id }}" aria-expanded="false" aria-controls="collapseExample" onclick="reply({{ reply.pk }},{{ reply.user.pk }},{{ course_comment.pk }})">
+                                          回复回复评论
+                                        </a>
+                                     {# 上一级评论回复end #}
+                                     {# 上一级评论回复输入框 #}
+                                            <div class="collapse" id="collapseExample_{{ reply.id }}">
+                                                  <div class="well">
+                                                    <input class="ptn" name="reply_text">
+{#                                                value="回复{{ replays.user.username }}" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '回复{{ replays.user.username }}';}"#}
+                                            </input>
+                                                    <a class="btn btn-primary reply-submit">回复</a>{# .reply-submit：让顶级回复和回复回复的按钮都可以点，如果是 .reply-submit则只能点击一个 #}
+                                                  </div>
+                                            </div>
+                                    {# 上一级评论回复输入框end #}
+                                        </div>
+                                    {% endfor %}
+                                {# 回复end #}
                             </li>
                             {% empty %}
                                 <p>暂无评论</p>
@@ -183,8 +244,13 @@
 {% endblock %}
 
 {% block custom_js %}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+
     <script type="text/javascript">
-         //获取submit的点击功能 和收藏功能一样
+    
+    //获取submit的点击功能 和收藏功能一样,评论功能
     $('#js-pl-submit').on('click', function(){
         //获取输入的值，如果为空：评论不能为空；否则提交ajax
         var comments = $("#js-pl-textarea").val()
@@ -217,5 +283,60 @@
             },
         });
     });
+    
+
+    //点击回复按钮，reply_comment()
+    $(function () {
+        $('.reply-submit').click(function () {
+           reply_comment();
+        });
+    });
+
+    //回复功能
+    function reply_comment() {
+        var root_comment_id = $("#root_comment_id").val();//顶级评论id
+        var reply_comment_id = $("#reply_comment_id").val();//上一级评论id
+        var reply_user_id = $("#reply_user_id").val();//上一级评论的user的id
+        var comment = $('.comment').val();//回复顶级评论的内容
+        var ptn = $('.ptn').val();//回复 回复评论的内容
+        $.ajax({
+            cache: false,
+            type: 'POST',
+            url: '{% url 'course:reply_comment' %}',
+            data: {
+                'root_comment_id': root_comment_id,
+                'reply_comment_id': reply_comment_id,
+                'reply_user_id': reply_user_id,
+                'comment': comment,
+                'ptn': ptn,
+                'course_id' : {{ course_detail.pk }}
+            },
+            ansyc:true,
+               beforeSend:function (xhr,settings) {
+                   xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+               },
+            //异步成功
+            success: function (data) {
+                if (data.status == 'fail') {
+                    alert(data.msg); //输入错误
+                }
+                else if (data.status == 'success'){
+                    window.location.reload(); //刷新页面
+                }
+            }
+        })
+    }
+    
+    //第三方添加值
+    function reply(reply_comment_id,reply_user_id,root_comment_id) {
+        $('#reply_comment_id').val(reply_comment_id);
+        $('#reply_user_id').val(reply_user_id);
+        $('#root_comment_id').val(root_comment_id);
+
+        //点击回复，自动获取焦点
+        $('.comment').focus();
+        $('.ptn').focus();
+
+    }
     </script>
 {% endblock %}

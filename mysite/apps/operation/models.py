@@ -36,10 +36,15 @@ class UserMessage(models.Model):
 
 # 用户评论
 class CourseComments(models.Model):
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,verbose_name="用户")
-    course = models.ForeignKey(Course,on_delete=models.CASCADE,verbose_name="评论的课程")
+    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,verbose_name="评论的用户")
+    course = models.ForeignKey(Course,related_name='comment_course',on_delete=models.CASCADE,verbose_name="评论的课程")
     comment = models.CharField(max_length=200,verbose_name="评论内容")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="评论时间")
+
+    root = models.ForeignKey('self',related_name="root_comment",on_delete=models.CASCADE,null=True,blank=True,verbose_name="顶级评论")
+    parent = models.ForeignKey('self',related_name="parent_comment",on_delete=models.CASCADE,null=True,blank=True,verbose_name="上一级评论")#上一级评论在此模型
+
+    reply_to = models.ForeignKey(UserProfile,related_name="reply_users",on_delete=models.CASCADE,null=True,blank=True,verbose_name="回复给谁")
 
     class Meta:
         verbose_name = "用户评论"
@@ -47,7 +52,8 @@ class CourseComments(models.Model):
         ordering = ["-add_time"]
 
     def __str__(self):
-        return "{0}添加：{1}评论".format(self.user, self.course)
+        return "{0}添加：{1}".format(self.user, self.comment)
+
 
 #UserCourse 用户学习的课程
 class UserCourse(models.Model):
