@@ -15,7 +15,7 @@ import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR,'apps'))
-sys.path.insert(0, os.path.join(BASE_DIR,'extra_apps'))
+sys.path.insert(0, os.path.join(BASE_DIR,'extra_app'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -144,7 +144,7 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_URL = '/media/'# 上传图片的路径，上传的图片会自动传递给media目录
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#上传到哪个文件
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#文件上传到根目录media中
 
 #重写authentication#记得加逗号，不然会出现奇怪的bug
 AUTHENTICATION_BACKENDS = (

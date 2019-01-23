@@ -123,16 +123,16 @@
                                 </div>
                                 {# 回复 #}
                                     {% for reply in course_comment.root_comment.all %}
-                                      <div class="media">
-                                    <span target="_blank"><img src='{{ MEDIA_URL }}{{ reply.user.image }}' width='40' height='40' /></span>
-                                </div>
+                                          <div class="media">
+                                                <span target="_blank"><img src='{{ MEDIA_URL }}{{ reply.user.image }}' width='40' height='40' /></span>
+                                          </div>
                                         <div class="bd">
-                                            <div class="tit">
-                                                <span target="_blank">{{ reply.user.username }}回复</span><span target="_blank">{{ reply.reply_to.username }}</span>
-                                            </div>
-                                            <p class="cnt">{{ reply.comment }}</p>
-                                            <div class="footer clearfix">
-                                                <span title="创建时间" class="l timeago">{{ reply.add_time }}</span>
+                                        <div class="tit">
+                                            <span target="_blank">{{ reply.user.username }}回复</span><span target="_blank">{{ reply.reply_to.username }}</span>
+                                        </div>
+                                        <p class="cnt">{{ reply.comment }}</p>
+                                        <div class="footer clearfix">
+                                            <span title="创建时间" class="l timeago">{{ reply.add_time }}</span>
                                         </div>
                                     {# 上一级评论回复，点击了onclick才获取值 #}
                                         <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseExample_{{ reply.id }}" aria-expanded="false" aria-controls="collapseExample" onclick="reply({{ reply.pk }},{{ reply.user.pk }},{{ course_comment.pk }})">
@@ -253,7 +253,7 @@
     //获取submit的点击功能 和收藏功能一样,评论功能
     $('#js-pl-submit').on('click', function(){
         //获取输入的值，如果为空：评论不能为空；否则提交ajax
-        var comments = $("#js-pl-textarea").val()
+        var comments = $("#js-pl-textarea").val();
         if(comments == ""){
             alert("评论不能为空")
             return

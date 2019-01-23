@@ -185,6 +185,7 @@ class AddCommentView(View):
         comments = request.POST.get('comments', '') #评论内容
         if not request.user.is_authenticated:
             return Fail('用户未登录')
+
         #实例化
         course_comments = CourseComments()
         #如果获取有效的

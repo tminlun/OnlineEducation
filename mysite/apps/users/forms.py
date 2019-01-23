@@ -1,5 +1,6 @@
 from captcha.fields import CaptchaField
 from django import forms
+from .models import UserProfile
 
 class LoginForm(forms.Form):
     """登录验证表单"""
@@ -21,7 +22,15 @@ class ForgetPwdForm(forms.Form):
     email = forms.EmailField(required=True)
     captcha = CaptchaField(error_messages={"invalid": "验证码输入错误"})
 
+
 class ModifyPwdForm(forms.Form):
     """找回密码表单"""
     password1 = forms.CharField(required=True, min_length=6, max_length=15)
     password2 = forms.CharField(required=True, min_length=6, max_length=15)
+
+
+class ModifyImageForm(forms.ModelForm):
+    """修改头像"""
+    class Meta:
+        model = UserProfile
+        fields = ['image']

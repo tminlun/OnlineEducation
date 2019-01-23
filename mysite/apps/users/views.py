@@ -6,8 +6,9 @@ from django.db.models import Q
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.hashers import make_password
 from utils.email_send import send_register_email
+from utils.mixin_utils import LoginRequiredMixin
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm,RegisterForm,ForgetPwdForm,ModifyPwdForm
+from .forms import LoginForm,RegisterForm,ForgetPwdForm,ModifyPwdForm,ModifyImageForm
 # Create your views here.
 
 
@@ -184,8 +185,29 @@ class ModifyPwdView(View):
             email = request.POST.get('email', '')
             return render(request, "password_reset.html",{"modify_form":modify_form, "email": email})
 
+
 class LogoutView(View):
     """注销"""
     def get(self,request):
         logout(request)
         return redirect('index')
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    """用户信息"""
+    def get(self, request):
+      return render(request, 'usercenter-info.html',{
+
+      })
+
+
+class ModifyImageView(LoginRequiredMixin, View):
+    """用户修改头像"""
+    def post(self, request):
+        image_form = ModifyImageForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+            image_form.save()
+            #取出form里面的数据
+            # image = image_form.cleaned_data['image']
+            # request.user.image = image
+            # request.user.save()
