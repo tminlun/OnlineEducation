@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+from DjangoUeditor.models import UEditorField
 from organization.models import CourseOrg, Teacher
 # Create your models here.
 
@@ -16,7 +17,8 @@ class Course(models.Model):
     course_org = models.ForeignKey(CourseOrg, null=True, blank=True, on_delete=models.CASCADE)#CourseOrg可反向查询它
     name = models.CharField(max_length=15, verbose_name="课程名")
     desc = models.CharField(max_length=200, verbose_name="课程描述")
-    detail = models.TextField(verbose_name="课程详情")
+    detail = UEditorField(verbose_name=u'课程详情', width=600, height=300, imagePath="courses/ueditor/",
+                          filePath="courses/ueditor/", default='')
     degree = models.CharField(max_length=10, choices=degree_choices, verbose_name="难度")
     learn_times = models.IntegerField(default=0, verbose_name='学习时长(分钟)')
     students = models.IntegerField(default=0, verbose_name="学习人数")
@@ -29,6 +31,7 @@ class Course(models.Model):
     teachers = models.ForeignKey(Teacher, on_delete=models.CASCADE,verbose_name="教师", null=True, blank=True)
     instructions = models.CharField('课程须知',max_length=300,default='')
     teacher_tell = models.CharField('老师告诉你',max_length=300,default='')
+    is_banner = models.BooleanField(default=False, verbose_name="是否为轮播图")
     add_time = models.DateTimeField(default=datetime.now, verbose_name="添加时间")#default和auto_now有冲突
 
     class Meta:
@@ -40,6 +43,13 @@ class Course(models.Model):
     def get_lesson_nums(self):
         """反向查询所有的章节数，（章节有了此外键）"""
         return self.lesson_set.all().count()
+    get_lesson_nums.short_description = "章节数"
+
+    def go_to(self):
+        """在后台显示html,"""
+        from django.utils.safestring import mark_safe
+        return mark_safe("<a href='https://fontawesome.com/icons?d=gallery'>转跳</a>")
+    go_to.short_description = "转跳"
 
     #学习用户
     def get_user_course(self):
@@ -60,6 +70,14 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BannerCourse(Course):
+    """model分类管理"""
+    class Meta:
+        verbose_name = "轮播图课程"
+        verbose_name_plural = verbose_name
+        proxy = True
 
 
 #课程的章节

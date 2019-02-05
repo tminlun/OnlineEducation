@@ -11,12 +11,14 @@ class EmailVerifyRecordAdmin(object):
     search_fields = ['code', 'email', 'send_type']
     # 过滤
     list_filter = ['code', 'email', 'send_type', 'send_time']
+    model_icon = 'fas fa-at'
 
 
 class BannerAdmin(object):
     list_display = ('title', 'image', 'url', 'index', 'add_time')
     search_fields = ['title', 'image', 'url', 'index']
     list_filter = ['title', 'image', 'url', 'index', 'add_time']
+    model_icon = 'fas fa-angle-double-left'
 
 
 xadmin.site.register(EmailVerifyRecord, EmailVerifyRecordAdmin)
@@ -27,7 +29,7 @@ xadmin.site.register(Banner, BannerAdmin)
 class BaseSetting(object):
     # 开启主题功能
     enable_themes = True
-    user_bootswatch = True
+    use_bootswatch = True  # 调用更多主题
 
 
 class GlobalSettings(object):

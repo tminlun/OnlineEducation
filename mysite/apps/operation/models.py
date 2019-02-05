@@ -4,6 +4,7 @@ from users.models import UserProfile
 from course.models import Course
 # Create your models here.
 
+
 #用户咨询
 class UserAsk(models.Model):
     name = models.CharField(max_length=20, verbose_name="姓名")
@@ -17,6 +18,7 @@ class UserAsk(models.Model):
 
     def __str__(self):
         return self.name
+
 
 #用户消息表
 class UserMessage(models.Model):
@@ -32,6 +34,9 @@ class UserMessage(models.Model):
     class Meta:
         verbose_name = "用户消息表"
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.message
 
 
 # 用户评论
@@ -70,6 +75,7 @@ class UserCourse(models.Model):
 
     def __str__(self):
         return "{0}添加课程:'{1}'".format(self.user, self.course)
+
 
 #Favorite 用户收藏
 class UserFavorite(models.Model):

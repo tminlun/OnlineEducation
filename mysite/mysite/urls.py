@@ -20,14 +20,16 @@ from django.urls import path,include,re_path
 from django.views.generic import TemplateView
 from django.conf import settings #上传图片
 from django.conf.urls.static import static #上传图片
-from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView, LogoutView
+from django.views.static import serve
+from django.conf.urls import url
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView, LogoutView, IndexView
 from organization.views import OrgView
 
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html'), name='index'),#测试，省去views渲染
-    path('login/',LoginView.as_view(),name="login"),
+    path('', IndexView.as_view(), name='index'),#首页（TemplateView.as_view(template_name='index.html')测试，省去views渲染）
+    path('login/',LoginView.as_view(),name="login"),#登录
     path('captcha/',include('captcha.urls')),#验证码
     path('register/',RegisterView.as_view(),name="register"),#注册
     #(?P)提取一个变量用作参数：<active_code>；用正则表达式取出 ActiveUserView 中所有的 active_code（任意命名要和ActiveUserView参数相同）
@@ -41,5 +43,14 @@ urlpatterns = [
     path('course/',include("course.urls", namespace="course")), #公开课
     path('users/',include("users.urls", namespace="users")), #用户信息
 
+    #404，手动配置static路径
+    # url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
+
+    #富文本编辑器
+    path('ueditor/',include('DjangoUeditor.urls')),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# handler404 = users.views.path_not_found #全局404页面配置
+# handler500 = "users.views.page_error" #全局500页面配置

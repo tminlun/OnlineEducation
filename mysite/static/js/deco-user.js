@@ -50,7 +50,7 @@ var verify = verifyDialogSubmit(
         cache: false,
         type: 'post',
         dataType:'json',
-        url:"/users/update_email/ ",
+        url:"/users/update_email/",
         data:$('#jsChangeEmailForm').serialize(),
         async: true,
         beforeSend:function(XMLHttpRequest){
@@ -75,6 +75,7 @@ var verify = verifyDialogSubmit(
     });
 }
 
+//个人资料修改密码
 $(function(){
     //个人资料修改密码
     $('#jsUserResetPwd').on('click', function(){
@@ -86,14 +87,14 @@ $(function(){
             cache: false,
             type: "POST",
             dataType:'json',
-            url:"/users/update/pwd/",
+            url:"/users/update_pwd/",
             data:$('#jsResetPwdForm').serialize(),
             async: true,
             success: function(data) {
-                if(data.password1){
-                    Dml.fun.showValidateError($("#pwd"), data.password1);
-                }else if(data.password2){
-                    Dml.fun.showValidateError($("#repwd"), data.password2);
+                if(data['password1']){
+                    Dml.fun.showValidateError($("#pwd"), data['password1']);
+                }else if(data['password2']){
+                    Dml.fun.showValidateError($("#repwd"), data['password2']);
                 }else if(data.status == "success"){
                     Dml.fun.showTipsDialog({
                         title:'提交成功',
@@ -101,8 +102,8 @@ $(function(){
                     });
                     Dml.fun.winReload();
                 }else if(data.msg){
-                    Dml.fun.showValidateError($("#pwd"), data.msg);
-                    Dml.fun.showValidateError($("#repwd"), data.msg);
+                    Dml.fun.showValidateError($("#pwd"), data['msg']);//#pwd：获取ID，data.msg：传递错误
+                    Dml.fun.showValidateError($("#repwd"), data['msg']);
                 }
             }
         });
@@ -120,6 +121,7 @@ $(function(){
     $('#jsChangeEmailCodeBtn').on('click', function(){
         sendCodeChangeEmail($(this));
     });
+
     $('#jsChangeEmailBtn').on('click', function(){
         changeEmailSubmit($(this));
     });
@@ -144,6 +146,7 @@ $(function(){
             {id: '#nick_name', tips: Dml.Msg.epNickName, require: true}
         ]
     );
+
     //保存个人资料
     $('#jsEditUserBtn').on('click', function(){
         var _self = $(this),
@@ -170,10 +173,10 @@ $(function(){
             success: function(data) {
                 if(data.nick_name){
                     _showValidateError($('#nick_name'), data.nick_name);
-                }else if(data.birday){
-                   _showValidateError($('#birth_day'), data.birday);
-                }else if(data.address){
-                   _showValidateError($('#address'), data.address);
+                }else if(data.brithday){
+                   _showValidateError($('#birth_day'), data.brithday);
+                }else if(data.adress){
+                   _showValidateError($('#address'), data.adress);
                 }else if(data.status == "failure"){
                      Dml.fun.showTipsDialog({
                         title: '保存失败',

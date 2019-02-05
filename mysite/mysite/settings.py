@@ -26,7 +26,7 @@ SECRET_KEY = '0^0na2!g1pcu2t(vti*c)^35#t*g@rw=y5kedaub13n!$^3bt!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [] #防止黑客发送请求,改了DEBUG = False,必须在此['*']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'organization.apps.OrganizationConfig',#课程机构
     'captcha',#注册码
     'pure_pagination', #分页
+    'DjangoUeditor', #富文本app
 ]
 
 #扩展User
@@ -140,11 +141,15 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 MEDIA_URL = '/media/'# 上传图片的路径，上传的图片会自动传递给media目录
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#文件上传到根目录media中
+
+#DEBUG = flase会使得django失效自动识别static。手动加载static
+# STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
+
 
 #重写authentication#记得加逗号，不然会出现奇怪的bug
 AUTHENTICATION_BACKENDS = (
@@ -163,6 +168,6 @@ EMAIL_FROM = "1272443075@qq.com"            # 邮箱地址要和EMAIL_HOST_USER�
 PAGINATION_SETTINGS = {
     'PAGE_RANGE_DISPLAYED': 10, #分页中间的页码
     'MARGIN_PAGES_DISPLAYED': 2, #中间左右两边的页码范围两个
-
     'SHOW_FIRST_PAGE_WHEN_INVALID': True, #使用...
 }
+

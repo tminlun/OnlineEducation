@@ -102,8 +102,14 @@ class CourseInfoView(LoginRequiredMixin, View):
     """
 
     def get(self, request, course_id):
-
         course_detail = get_object_or_404(Course, pk=course_id)
+
+        cookie = "course_%s" % course_detail.pk
+        #点击我要学习，课程学习人数+1
+        if not request.COOKIES.get(cookie):
+            course_detail.students += 1
+            course_detail.save()
+
         all_resources = CourseResource.objects.filter(course=course_detail) #哪个课程的资源
 
         #当前用户和学习课程关联（实例化用户学习）
@@ -123,12 +129,15 @@ class CourseInfoView(LoginRequiredMixin, View):
         course_ids = [all_user_course.course_id for all_user_course in all_user_courses]
         # 通过所有课程的id,找到所有的课程，按点击量去五个
         relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
-        return render(request, "course-video.html", {
+
+        response = render(request, "course-video.html", {
 
             "course_detail": course_detail,
             "course_resources": all_resources, #哪个课程的资源
             "relate_courses": relate_courses,#该课的同学还学过
         })
+        response.set_cookie(cookie, 'true')
+        return response
 
 
 class CourseCommentView(LoginRequiredMixin, View):

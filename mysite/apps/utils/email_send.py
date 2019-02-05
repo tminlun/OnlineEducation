@@ -28,16 +28,25 @@ def random_str(randomlength=8):
     return str #返回随机数
 
 
-#email（用户的邮箱）,send_type=''（默认发送的类型）
-def send_register_email(email,send_type='register'):
+def send_register_email(email, send_type='register'):
+    """
+    :param email: 用户的邮箱
+    :param send_type: 发送的类型
+    :return:
+    """
     email_record = EmailVerifyRecord()#实例化
-    code = random_str(16) #生成长度为16的验证码(随机字符串)
+    if send_type == "update_email":
+        code = random_str(4)
+    else:
+        code = random_str(16)
     email_record.code = code #储存在数据库的email_record.code
     email_record.email = email #views（用户输入）传递过来的邮箱
     email_record.send_type = send_type #默认发送类型为注册(register)
     email_record.save() #code先保存在数据库
+
     email_title = ""
     email_body = ""
+
     #判断发送类型
     if send_type == "register":
         email_title = "dream网注册链接"
@@ -51,8 +60,18 @@ def send_register_email(email,send_type='register'):
 
     elif send_type == "forget":
         email_title = "dream网找回密码链接"
-        email_body = "请点击下面链接找回密码:http://127.0.0.1:8000/reset/{0}".format(code)
+        email_body = "请点击下面链接找回密码:http://127.0.0.1:8001/reset/{0}".format(code)
 
         send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])
-        if send_status: #debug：send_status = 1说明发送成功
+        # debug：send_status = 1说明发送成功
+        if send_status:
+            pass
+
+    elif send_type == "update_email":
+        email_title = "邮箱验证码"
+        email_body = "你的邮箱验证码:{0}".format(code)
+
+        send_status = send_mail(email_title, email_body, EMAIL_FROM, [email])  # 会返回一个值（true / false）
+        # 如果邮箱发送出去了
+        if send_status:
             pass

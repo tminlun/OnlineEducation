@@ -88,7 +88,7 @@ class UserAdmin(object):
                              'username', 'password',
                              css_class='unsort no_title'
                              ),
-                    Fieldset(_('Personal info'),
+                    Fieldset(_('Personal info'),#翻译成中文
                              Row('first_name', 'last_name'),
                              'email'
                              ),
@@ -262,7 +262,7 @@ class ChangeAccountPasswordView(ChangePasswordView):
             return self.get_response()
 
 
-user_model = settings.AUTH_USER_MODEL.lower().replace('.','/')
+user_model = settings.AUTH_USER_MODEL.lower().replace('.', '/')
 site.register_view(r'^%s/(.+)/password/$' % user_model,
                    ChangePasswordView, name='user_change_password')
 site.register_view(r'^account/password/$', ChangeAccountPasswordView,

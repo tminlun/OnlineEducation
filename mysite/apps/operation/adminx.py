@@ -7,14 +7,15 @@ class UserAskAdmin(object):
     list_display = ['name', 'phone_nums', 'course_name', 'add_time']
     search_fields = ['name', 'phone_nums', 'course_name']
     list_filter = ['name', 'phone_nums', 'course_name', 'add_time']
+    model_icon = 'fas fa-hard-hat'
 
 
 class UserMessageAdmin(object):
     '''用户消息后台'''
-
     list_display = ['user', 'message', 'has_read', 'add_time']
     search_fields = ['user', 'message', 'has_read']
     list_filter = ['user', 'message', 'has_read', 'add_time']
+    model_icon = 'fas fa-sms'
 
 
 class CourseCommentsAdmin(object):
@@ -23,14 +24,15 @@ class CourseCommentsAdmin(object):
     list_display = ['user', 'course', 'comment', 'add_time']
     search_fields = ['user', 'course', 'comment']
     list_filter = ['user', 'course', 'comment', 'add_time']
+    model_icon = 'fas fa-comments'
 
 
 class UserCourseAdmin(object):
-    '''用户课程学习'''
-
+    '''用户学习课程'''
     list_display = ['user', 'course', 'add_time']
     search_fields = ['user', 'course']
     list_filter = ['user', 'course', 'add_time']
+    model_icon = 'fas fa-graduation-cap'
 
 
 class UserFavoriteAdmin(object):
@@ -39,6 +41,7 @@ class UserFavoriteAdmin(object):
     list_display = ['user', 'fav_id', 'fav_type', 'add_time']
     search_fields = ['user', 'fav_id', 'fav_type']
     list_filter = ['user', 'fav_id', 'fav_type', 'add_time']
+    model_icon = 'fas fa-star'
 
 
 # 将后台管理器与models进行关联注册。

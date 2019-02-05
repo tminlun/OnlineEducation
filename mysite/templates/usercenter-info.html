@@ -42,6 +42,8 @@
                         <a class="button btn-green btn-w100" id="jsUserResetPwd" style="margin:80px auto;width:100px;">修改密码</a>
                     </div>
 				</div>
+
+                {# 个人资料修改 #}
 				<form class="perinform" id="jsEditUserForm" autocomplete="off">
 					<ul class="right">
 						<li>昵&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;称：
@@ -49,15 +51,15 @@
                             <i class="error-tips"></i>
                         </li>
 						<li>生&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日：
-                           <input type="text" id="birth_day" name="birday" placeholder="请输入你的生日" value="{{ request.user.brithday|default_if_none:'' }}" readonly="readonly"/>
+                           <input type="text" id="birth_day" name="brithday" placeholder="请输入你的生日" value="{{ request.user.brithday|default_if_none:'' }}" readonly="readonly"/>
                             <i class="error-tips"></i>
 						</li>
 						<li>性&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：
-							<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio"  name="gender" value="male" {% if request.user.gander == 'man' %}checked="checked"{% endif %}>男</label>
-							<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="gender" value="female" {% if request.user.gander == 'female' %}checked="checked"{% endif %}>女</label>
+							<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio"  name="gander" value="man" {% if request.user.gander == 'man' %}checked="checked"{% endif %}>男</label>
+							<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="gander" value="female" {% if request.user.gander == 'female' %}checked="checked"{% endif %}>女</label>
 						</li>
 						<li class="p_infor_city">地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址：
-                            <input type="text" name="address" id="address" placeholder="请输入你的地址" value="{{ request.user.adress }}" maxlength="10">
+                            <input type="text" name="adress" id="adress" placeholder="请输入你的地址" value="{{ request.user.adress }}" maxlength="10">
 						    <i class="error-tips"></i>
                         </li>
 						<li>手&nbsp;&nbsp;机&nbsp;&nbsp;号：
@@ -72,7 +74,9 @@
 						</li>
 					</ul>
                     <input type='hidden' name='csrfmiddlewaretoken' value='799Y6iPeEDNSGvrTu3noBrO4MBLv6enY' />
+                    {% csrf_token %}
 				</form>
+             {# 个人资料修改end #}
 			</div>
 		</div>
 	</div>

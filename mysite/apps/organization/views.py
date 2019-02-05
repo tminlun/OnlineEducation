@@ -113,6 +113,9 @@ class OrgDetailHome(View):
     def get(self, request, org_id):
         current_page = 'home' #前端active（选中）判断是否为当前页面
         detail_org = get_object_or_404(CourseOrg, pk=int(org_id)) #获取具体的机构
+        detail_org.click_nums += 1
+        detail_org.save()
+
         all_course = detail_org.course_set.all()[:3] #反向查询所有的课程
         all_teacher = detail_org.teacher_set.all()[:1] #反向查询所有的教师
         """用户是否收藏，has_fav = False：默认为没有has_fav"""
@@ -196,8 +199,8 @@ class AddFavView(View):
     如果没有数据，即收藏；注：如果获取不到"fav_id、fav_type", 不进行收藏，给报错
     """
     def post(self, request):
-        fav_id = request.POST.get("fav_id", 0)
-        fav_type = request.POST.get("fav_type", 0)
+        fav_id = int(request.POST.get("fav_id", 0))
+        fav_type = int(request.POST.get("fav_type", 0))
         if not request.user.is_authenticated:
             return JsonResponse({"status": "fail", "msg": "用户未登录"})
         # exist_record是否存在记录
@@ -205,6 +208,30 @@ class AddFavView(View):
         if exist_record:
             """取消收藏"""
             exist_record.delete()
+
+            #收藏数 - 1
+            if fav_type == 1:
+                #收藏类型为课程
+                course = Course.objects.get(id=fav_id)
+                course.fav_nums -= 1
+                if course.fav_nums <= 0:
+                    course.fav_nums = 0
+                course.save()
+            if fav_type == 2:
+                # 收藏类型为机构
+                org = CourseOrg.objects.get(id=fav_id)
+                org.fav_nums -= 1
+                if course.fav_nums <= 0:
+                    course.fav_nums = 0
+                org.save()
+            if fav_type == 3:
+                #收藏类型为讲师
+                teacher = Teacher.objects.get(id=fav_id)
+                teacher.fav_nums -= 1
+                if course.fav_nums <= 0:
+                    course.fav_nums = 0
+                teacher.save()
+
             return JsonResponse({"status": "success", "msg": "收藏"})
         else:
             """收藏"""
@@ -214,6 +241,23 @@ class AddFavView(View):
                 user_fav.fav_id = int(fav_id)
                 user_fav.fav_type = int(fav_type)
                 user_fav.save()
+
+                # 收藏数 + 1
+                if fav_type == 1:
+                    # 收藏类型为课程
+                    course = Course.objects.get(id=fav_id)
+                    course.fav_nums += 1
+                    course.save()
+                if fav_type == 2:
+                    # 收藏类型为机构
+                    org = CourseOrg.objects.get(id=fav_id)
+                    org.fav_nums += 1
+                    org.save()
+                if fav_type == 3:
+                    # 收藏类型为讲师
+                    teacher = Teacher.objects.get(id=fav_id)
+                    teacher.fav_nums += 1
+                    teacher.save()
                 return JsonResponse({"status": "success", "msg": "已收藏"})
             else:
                 return JsonResponse({"status": "fail", "msg": "收藏出错"})
@@ -261,8 +305,10 @@ class TeacherListView(View):
 class TeacherDetailView(View):
     """教师详情页：具体教师的课程、教师的机构、收藏（教师、机构）"""
     def get(self, request, teacher_id):
-
         teacher_detail = Teacher.objects.get(pk=int(teacher_id))#具体教师
+        teacher_detail.click_nums += 1
+        teacher_detail.save()
+
         teacher_courses = Course.objects.filter(teachers=teacher_detail)#教师相关课程
         teacher_org = CourseOrg.objects.get(teacher=teacher_detail) #教师相关机构
 
@@ -277,8 +323,8 @@ class TeacherDetailView(View):
                 has_teacher_fav = True #如果数据库存在（{% if has_teacher_fav） %}，已收藏
             if UserFavorite.objects.filter(user=request.user, fav_id=teacher_org.id, fav_type=2):
                 has_org_fav = True #如果数据库存在（{% if has_teacher_fav） %}，已收藏
-        return render(request, 'teacher-detail.html', {
 
+        return render(request, 'teacher-detail.html', {
             "teacher_detail": teacher_detail,
             "teacher_courses": teacher_courses,
             "teacher_org": teacher_org,

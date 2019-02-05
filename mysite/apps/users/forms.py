@@ -2,6 +2,7 @@ from captcha.fields import CaptchaField
 from django import forms
 from .models import UserProfile
 
+
 class LoginForm(forms.Form):
     """登录验证表单"""
     username = forms.CharField(required=True)
@@ -34,3 +35,15 @@ class ModifyImageForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['image']
+
+
+class UpdatePwdForm(forms.Form):
+    password1 = forms.CharField(required=True, min_length=6, max_length=15)
+    password2 = forms.CharField(required=True, min_length=6, max_length=15)
+
+
+class UpdateUserForm(forms.ModelForm):
+    """修改个人信息"""
+    class Meta:
+        model = UserProfile
+        fields = ['nick_name', 'brithday', 'gander', 'adress', 'mobile']

@@ -130,7 +130,11 @@
 					</ul>
 				</div>
 				<div class="tab_cont tab_cont1">
-                    <p>{{ course_detail.detail }}</p>
+                    <p>
+                        {% autoescape off %}
+                            {{ course_detail.detail }}
+                        {% endautoescape %}
+                    </p>
 
 				</div>
 				<div class="tab_cont tab_cont2" >

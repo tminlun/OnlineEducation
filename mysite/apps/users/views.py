@@ -1,3 +1,5 @@
+import json
+from pure_pagination import Paginator, EmptyPage, PageNotAnInteger #分页
 from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.views import View
@@ -5,10 +7,13 @@ from django.contrib.auth import authenticate,login,logout
 from django.db.models import Q
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse, HttpResponse
 from utils.email_send import send_register_email
 from utils.mixin_utils import LoginRequiredMixin
-from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm,RegisterForm,ForgetPwdForm,ModifyPwdForm,ModifyImageForm
+from operation.models import UserCourse, Course, UserFavorite, UserMessage
+from organization.models import CourseOrg ,Teacher
+from .models import UserProfile, EmailVerifyRecord, Banner
+from .forms import LoginForm,RegisterForm,ForgetPwdForm,ModifyPwdForm,ModifyImageForm, UpdatePwdForm, UpdateUserForm
 # Create your views here.
 
 
@@ -43,13 +48,14 @@ class LoginView(View):
             # 获取用户提交的用户名和密码
             user_name = request.POST.get('username', '')
             pass_word = request.POST.get('password', '')
+            # 可以防止sql攻击，把攻击的账号（' OR 1=1#） 的'转换为特殊字符  【密码：123(随意输入)】
             user = authenticate(username=user_name, password=pass_word)
             # 判断数据库账号密码是否一致
             if user is not None:
                 #判断用户是否激活，即使注册了，没激活，也不给登录
                 if user.is_active: #(user.is_active == True)
                     login(request, user)
-                    return render(request, 'index.html')
+                    return redirect('index')
                 else:
                     #返回login_form后，用户之前输入错误的账号密码还会保留在框中
                     return render(request, 'login.html', {'msg': '用户为激活', 'login_form': login_form})
@@ -83,6 +89,7 @@ class RegisterView(View):
         return render(request,'register.html',{
             'register_form': register_form,
         })
+
     def post(self,request):
         register_form = RegisterForm(request.POST)
         if register_form.is_valid():
@@ -105,6 +112,12 @@ class RegisterView(View):
             user_profile.password = make_password(pass_word_again)# 对注册的密码加密
             user_profile.is_active = False #让用户手动激活,默认为未激活
             user_profile.save()# 然后保存
+
+            user_message = UserMessage()
+            user_message.user = request.user.id
+            user_message.message = '恭喜您注册成功'
+            user_message.save()
+
             send_register_email(user_email, 'register')# 发送邮箱,注册类型
             return render(request, 'login.html')#注册完跳到登录页面
         #表单自动验证错误
@@ -194,20 +207,249 @@ class LogoutView(View):
 
 
 class UserInfoView(LoginRequiredMixin, View):
-    """用户信息"""
+    """用户信息的 显示和修改 """
     def get(self, request):
-      return render(request, 'usercenter-info.html',{
+      return render(request, 'usercenter-info.html',{})
 
-      })
+    def post(self, request):
+        update_user_form = UpdateUserForm(request.POST, instance=request.user)
+        if update_user_form.is_valid():
+            #cleaned_data可以获取（传递过来）的值
+            nick_name = update_user_form.cleaned_data['nick_name']
+            brithday = update_user_form.cleaned_data['brithday']
+            gander = update_user_form.cleaned_data['gander']
+            adress = update_user_form.cleaned_data['adress']
+            mobile = update_user_form.cleaned_data['mobile']
+            #获取当前用户
+            user = request.user
+            user.nick_name = nick_name
+            user.brithday = brithday
+            user.gander = gander
+            user.adress = adress
+            user.mobile = mobile
+            user.save()
+
+            return HttpResponse('{"status":"success"}', content_type="application/json,charset=utf-8")
+
+        else:
+            #出现错误
+            return HttpResponse(json.dumps(update_user_form.errors), content_type="application/json,charset=utf-8")
+
+
+def Success(msg):
+    data = {}
+    data['status'] = 'success'
+    data['msg'] = msg
+    return JsonResponse(data)
+
+
+def Fail(msg):
+    data = {}
+    data['status'] = 'fail'
+    data['msg'] = msg
+    return JsonResponse(data)
 
 
 class ModifyImageView(LoginRequiredMixin, View):
-    """用户修改头像"""
+    """
+    用户修改头像:
+        取出form里面的数据
+        image = image_form.cleaned_data['image']
+        request.user.image = image
+        request.user.save()
+
+        instance=request.user：保存后form不会新增用户
+
+    """
     def post(self, request):
         image_form = ModifyImageForm(request.POST, request.FILES, instance=request.user)
         if image_form.is_valid():
             image_form.save()
-            #取出form里面的数据
-            # image = image_form.cleaned_data['image']
-            # request.user.image = image
-            # request.user.save()
+            return HttpResponse('{"status":"success"}', content_type="application/json,charset=utf-8")
+        else:
+            return HttpResponse('{"status":"fail"}', content_type="application/json,charset=utf-8")
+
+
+class UpdatePwdView(LoginRequiredMixin, View):
+    """
+    个人中心用户修改密码
+    不管是异步还是from表单，都要加 csrf_token, 不然debug不了
+    """
+    def post(self,request):
+        updatepwd_form = UpdatePwdForm(request.POST)
+        if updatepwd_form.is_valid():
+            password1 = request.POST.get('password1', '')
+            password2 = request.POST.get('password2', '')
+
+            if password1 != password2:
+                return Fail('两次输入不一致')
+
+            user = request.user
+            user.password = make_password(password2)
+            user.save()
+            return Success('修改成功')
+        else:
+            # 返回错误，不需要加"fail"；json.dumps(updatepwd_form.errors)：把错误的字典转换为字符串
+            return HttpResponse(json.dumps(updatepwd_form.errors), content_type="application/json,charset=utf-8")
+
+
+class SendEmailCodeView(LoginRequiredMixin, View):
+    """
+    个人中心修改邮箱-获取验证码
+        获取邮箱，获取验证码，进行激活
+
+
+    坑：csrf_token、models长度、注册过的邮箱不能和修改相同
+    """
+    def get(self, request):
+        email = request.GET.get('email', '')
+        if UserProfile.objects.filter(email=email):
+            # 邮箱已经被注册，返回错误信息
+            return HttpResponse('{"email":"邮箱已被注册"}',content_type="application/json,charset=utf-8")
+        if not send_register_email(email,'update_email'):
+            send_register_email(email,'update_email')
+        else:
+            return HttpResponse('{"email":"已发送验证码"}', content_type="application/json,charset=utf-8")
+
+        return HttpResponse('{"status":"success"}', content_type="application/json,charset=utf-8")
+
+
+class UpdateEmailView(LoginRequiredMixin, View):
+    """
+    修改邮箱
+    输入验证码（隐秘的）， 需要post
+    """
+    def post(self, request):
+        email = request.POST.get('email', '')
+        code = request.POST.get('code', '')
+        if EmailVerifyRecord.objects.filter(email=email, code=code, send_type="update_email"):
+            #刚刚发送验证码的记录：数据库有此验证码，成功
+            user = request.user
+            user.email = email
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type="application/json,charset=utf-8")
+
+        else:
+
+            #数据库没有此验证码和修改的邮箱
+            return HttpResponse('{"email":"验证码或者邮箱错误"}', content_type="application/json,charset=utf-8")
+
+
+class MyCourseView(View):
+    """我的课程"""
+    def get(self, request):
+        user_courses = UserCourse.objects.filter(user=request.user)
+        #当前用户的学习课程
+
+        return render(request, 'usercenter-mycourse.html',{
+            "user_courses":user_courses,
+        })
+
+
+class FavCourseView(View):
+    """用户收藏列表-课程"""
+    def get(self, request):
+        current_path = 'fav_course'
+        fav_course_list = []
+        #filter、all都是返回list
+        fav_courses = UserFavorite.objects.filter(user=request.user, fav_type=1)
+        for fav_course in fav_courses:
+            #遍历筛选的课程ID，得到每一个课程
+            course_id = int(fav_course.fav_id)
+            course = Course.objects.get(id=course_id)
+            # id只能用在get()方法
+            fav_course_list.append(course)
+            #把一个个收藏课程放在列表
+
+        #用户收藏的课程
+        return render(request, 'usercenter-fav-course.html', {
+            "fav_course_list": fav_course_list,
+            'current_path': current_path,
+        })
+
+
+class FavOrgView(View):
+    """用户收藏列表-机构"""
+    def get(self, request):
+        current_path = 'fav_org'
+        org_list = []
+        fav_orgs = UserFavorite.objects.filter(user=request.user, fav_type=2)
+        for fav_org in fav_orgs:
+            #遍历类型为机构的所有收藏记录，取到ID
+            org_id = int(fav_org.fav_id)
+            org = CourseOrg.objects.get(id=org_id)
+            org_list.append(org)
+        return render(request, 'usercenter-fav-org.html',{
+            "org_list": org_list,
+            'current_path': current_path,
+        })
+
+
+class FavTeacherView(View):
+    """我的收藏-讲师"""
+    def get(self, request):
+        current_path = 'fav_teacher'
+        teacher_list = []
+        fav_teachers = UserFavorite.objects.filter(user=request.user, fav_type=3)
+        for fav_teacher in fav_teachers:
+            teacher_id = int(fav_teacher.fav_id)
+            teacher = Teacher.objects.get(pk=teacher_id)
+            teacher_list.append(teacher)
+        return render(request, 'usercenter-fav-teacher.html', {
+            'teacher_list': teacher_list,
+            'current_path': current_path,
+        })
+
+
+class MyMessageView(View):
+    """用户信息列表"""
+    def get(self, request):
+        #获取当前用户（用户ID）的消息
+        user_message = UserMessage.objects.filter(user=request.user.id)
+        for message in user_message:
+            message.has_read = True
+            message.save()
+        # 分页功能
+        try:
+            page = request.GET.get('page', 1)  # 获取n（page=n）,默认显示第一页
+        except PageNotAnInteger:
+            page = 1  # 出现异常显示第一页
+        p = Paginator(user_message, 2, request=request)  # 进行分页，每5个作为一页
+        messages = p.page(page)  # 获取当前页面
+
+        return render(request, 'usercenter-message.html',{
+            'messages': messages,
+        })
+
+
+class IndexView(View):
+    """首页"""
+    def get(self, request):
+        all_banner = Banner.objects.all().order_by("index")# 轮播图，使用order_by("index") 升序来控制顺序
+
+        course_banners = Course.objects.filter(is_banner=True)[:3]#课程是否为轮播图 is_banner
+
+        courses = Course.objects.filter(is_banner=False)[:6]#不是轮播图的课程
+
+        orgs = CourseOrg.objects.all()[:15] #机构
+        return render(request, 'index.html', {
+            "all_banner": all_banner,
+            "course_banners": course_banners,
+            "courses": courses,
+            "orgs": orgs,
+        })
+
+
+def path_not_found(request):
+    """404页面"""
+    from django.shortcuts import render_to_response
+    response = render_to_response('404.html',{})
+    response.status_code = 404 #设置显示状态：404
+    return response
+
+
+def page_error(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response('500.html',{})
+    response.status_code = 500
+    return response

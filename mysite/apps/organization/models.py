@@ -3,6 +3,7 @@ from django.db import models
 
 # Create your models here.
 
+
 class CityDict(models.Model):
     """
     机构城市
@@ -23,6 +24,7 @@ class CityDict(models.Model):
 #CourseOrg  机构基本信息
 class CourseOrg(models.Model):
     name = models.CharField(max_length=50, verbose_name="机构名称")
+    tag = models.CharField(default="全国知名", max_length=15, verbose_name="标签",null=True,blank=True)
     desc = models.TextField(verbose_name="机构的描述")
     #因为没有设置可以为空，是我们要设置默认值
     category = models.CharField(verbose_name="机构类别",default="pxjg",max_length=20, choices=(("pxjg","培训机构"),("gr","个人"),("gx","高校")))
@@ -54,6 +56,7 @@ class CourseOrg(models.Model):
         else:
             return self.desc
 
+
 #机构中的老师
 class Teacher(models.Model):
     org = models.ForeignKey(CourseOrg, on_delete=models.CASCADE, verbose_name="所属机构")
@@ -73,3 +76,6 @@ class Teacher(models.Model):
 
     def __str__(self):
         return "[{0}]的教师：{1}".format(self.org, self.name)
+
+    def get_course_nums(self):
+        return self.org.course_set.all().count()
